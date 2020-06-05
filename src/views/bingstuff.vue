@@ -102,5 +102,17 @@ export default {
 </script>
 
 <style>
-
+.customInfobox {
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    max-width: 200px;
+    border-radius: 10px;
+    padding: 10px;
+    font-size:12px;
+    pointer-events:auto !important;
+}
+.bmap {
+  width: 550px;
+  height: 300px;
+}
 </style>

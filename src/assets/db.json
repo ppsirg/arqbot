@@ -1,0 +1,8 @@
+{
+    "video_streamer_server": "http://localhost:8888",
+    "users": [
+        {"id":"0001", "user": "jose", "pass": "atech2020", "company": "agrotech", "drones":["DR001"]},
+        {"id":"0002", "user": "carlos", "pass": "gevent2020", "company": "garcia_eventos", "drones":["DR002"]},
+        {"id":"0003", "user": "admin", "pass": "admin2020", "company": "javerianacali", "drones":["DR001", "DR002"]}
+    ]
+}

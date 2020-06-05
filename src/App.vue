@@ -67,8 +67,6 @@ export default {
   },
   created () {
     this.$store.commit('user', {
-      name: 'john wick',
-      email: 'john@wick.com',
       avatar: '/data-sources/avatars/annie-spratt-121576-unsplash.jpg'
     })
   }

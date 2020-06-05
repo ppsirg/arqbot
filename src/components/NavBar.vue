@@ -4,7 +4,7 @@
     <div class="navbar-menu fadeIn animated faster" :class="{'is-active':isMenuNavBarActive}">
       <div class="navbar-end">
 
-        <nav-bar-menu class="has-divider has-user-avatar">
+        <nav-bar-menu class="has-divider has-user-avatar" v-show="userName">
           <user-avatar/>
           <div class="is-user-name">
             <span>{{ userName }}</span>
@@ -34,7 +34,7 @@
           <b-icon icon="help-circle-outline" custom-size="default"/>
           <span>About</span>
         </a>
-        <a class="navbar-item is-desktop-icon-only" title="Log out" @click="logout">
+        <a class="navbar-item is-desktop-icon-only" title="Log out" @click="logout" v-show="userName">
           <b-icon icon="logout" custom-size="default"/>
           <span>Log out</span>
         </a>
@@ -80,6 +80,7 @@ export default {
       this.isMenuNavBarActive = (!this.isMenuNavBarActive)
     },
     logout () {
+      this.$store.commit('logout')
       this.$buefy.snackbar.open({
         message: 'Log out clicked',
         queue: false

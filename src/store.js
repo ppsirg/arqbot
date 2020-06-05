@@ -9,6 +9,7 @@ export default new Vuex.Store({
     userName: null,
     userEmail: null,
     userAvatar: null,
+    userDrones: [],
 
     /* NavBar */
     isNavBarVisible: true,
@@ -37,6 +38,15 @@ export default new Vuex.Store({
       if (payload.avatar) {
         state.userAvatar = payload.avatar
       }
+      if (payload.drones) {
+        state.userDrones = payload.drones
+      }
+    },
+
+    logout (state) {
+      state.userName = ''
+      state.userEmail = ''
+      state.userDrones = []
     },
 
     /* Aside Mobile */

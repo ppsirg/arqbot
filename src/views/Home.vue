@@ -4,57 +4,45 @@
     <hero-bar :has-right-visible="false">
       Panel de mision
     </hero-bar>
-    <section class="section is-main-section">
-      <tiles>
-        <card-widget class="tile is-child" type="is-primary" icon="account-multiple" :number="512" label="Clients"/>
-        <card-widget class="tile is-child" type="is-info" icon="cart-outline" :number="7770" prefix="$" label="Sales"/>
-        <card-widget class="tile is-child" type="is-success" icon="chart-timeline-variant" :number="256" suffix="%" label="Performance"/>
-      </tiles>
-
-      <card-component title="Performance" @header-icon-click="fillChartData" icon="finance" header-icon="reload">
-        <div v-if="defaultChart.chartData" class="chart-area">
-          <line-chart style="height: 100%"
-                      ref="bigChart"
-                      chart-id="big-line-chart"
-                      :chart-data="defaultChart.chartData"
-                      :extra-options="defaultChart.extraOptions">
-          </line-chart>
-        </div>
-      </card-component>
-
-      <card-component title="Clients" class="has-table has-mobile-sort-spaced">
-        <clients-table-sample data-url="/data-sources/clients.json"/>
-      </card-component>
+    <!-- login  -->
+    <section class="section is-main-section" v-show="! userName">
+        <b-field label="Username"
+            type="is-success"
+            message="This username is available">
+            <b-input v-model="user.name" maxlength="30"></b-input>
+        </b-field>
+        <b-field label="Password">
+            <b-input type="password"
+                v-model="user.pass"
+                password-reveal>
+            </b-input>
+        </b-field>
+        <b-button @click="loginUser">Iniciar sesion</b-button>
+    </section>
+    <!-- home -->
+    <section class="section is-main-section" v-show="userName">
+      <h1>Bienvenido {{ userName }}</h1>
     </section>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 // @ is an alias to /src
-import * as chartConfig from '@/components/Charts/chart.config'
-import TitleBar from '@/components/TitleBar'
-import HeroBar from '@/components/HeroBar'
-import Tiles from '@/components/Tiles'
-import CardWidget from '@/components/CardWidget'
-import CardComponent from '@/components/CardComponent'
-import LineChart from '@/components/Charts/LineChart'
-import ClientsTableSample from '@/components/ClientsTableSample'
+const TitleBar = () => import(/* webpackChunkName: "titlebar" */ '@/components/TitleBar')
+const HeroBar = () => import(/* webpackChunkName: "herobar" */ '@/components/HeroBar')
+
 export default {
   name: 'home',
   components: {
-    ClientsTableSample,
-    LineChart,
-    CardComponent,
-    CardWidget,
-    Tiles,
     HeroBar,
     TitleBar
   },
   data () {
     return {
-      defaultChart: {
-        chartData: null,
-        extraOptions: chartConfig.chartOptionsMain
+      user: {
+        name: '',
+        pass: ''
       }
     }
   },
@@ -64,77 +52,35 @@ export default {
         'Admin',
         'Dashboard'
       ]
-    }
+    },
+    ...mapState([
+      'userName'
+    ])
   },
   mounted () {
-    this.fillChartData()
-
     this.$buefy.snackbar.open({
       message: 'Welcome back',
       queue: false
     })
   },
   methods: {
-    randomChartData (n) {
-      let data = []
-
-      for (let i = 0; i < n; i++) {
-        data.push(Math.round(Math.random() * 200))
+    loginUser: function (loginevent) {
+      console.log({ loginevent })
+      const dbdata = require('@/assets/db.json')
+      var userDrones = []
+      var emailDomain = 'user'
+      dbdata.users.forEach(element => {
+        if (element.user === this.user.name) {
+          userDrones = element.drones
+          emailDomain = element.company
+        }
+      })
+      let userData = {
+        name: this.user.name,
+        email: `${this.user.name}@${emailDomain}.com`,
+        drones: userDrones
       }
-
-      return data
-    },
-    fillChartData () {
-      this.defaultChart.chartData = {
-        datasets: [
-          {
-            fill: false,
-            borderColor: chartConfig.chartColors.default.primary,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartConfig.chartColors.default.primary,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartConfig.chartColors.default.primary,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: this.randomChartData(9)
-          },
-          {
-            fill: false,
-            borderColor: chartConfig.chartColors.default.info,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartConfig.chartColors.default.info,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartConfig.chartColors.default.info,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: this.randomChartData(9)
-          },
-          {
-            fill: false,
-            borderColor: chartConfig.chartColors.default.danger,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartConfig.chartColors.default.danger,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartConfig.chartColors.default.danger,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: this.randomChartData(9)
-          }
-        ],
-        labels: ['01', '02', '03', '04', '05', '06', '07', '08', '09']
-      }
+      this.$store.commit('user', userData)
     }
   }
 }
