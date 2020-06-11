@@ -14,9 +14,10 @@
 
 <script>
 import { mapState } from 'vuex'
-import CardComponent from '@/components/CardComponent'
-import TitleBar from '@/components/TitleBar'
-import HeroBar from '@/components/HeroBar'
+// @ is an alias to /src
+const TitleBar = () => import(/* webpackChunkName: "titlebar" */ '@/components/TitleBar')
+const HeroBar = () => import(/* webpackChunkName: "herobar" */ '@/components/HeroBar')
+const CardComponent = () => import(/* webpackChunkName: "cardcomponent" */ '@/components/CardComponent')
 const sts = require('@/assets/db.json')
 export default {
   name: 'Profile',

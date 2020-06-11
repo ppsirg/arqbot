@@ -5,7 +5,7 @@ import '@mdi/font/css/materialdesignicons.css'
 /* Core */
 import Vue from 'vue'
 import Buefy from 'buefy'
-import VueBingMaps from 'vue-bing-maps'
+// import VueBingMaps from 'vue-bing-maps'
 
 /* Router & Store */
 import router from './router'
@@ -31,7 +31,7 @@ Vue.config.productionTip = false
 Vue.component('AsideMenuList', AsideMenuList)
 
 Vue.use(Buefy)
-Vue.use(VueBingMaps, { debug: true })
+// Vue.use(VueBingMaps, { debug: true })
 
 new Vue({
   router,

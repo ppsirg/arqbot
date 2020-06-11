@@ -9,9 +9,9 @@
 
 <script>
 // @ is an alias to /src
-import NavBar from '@/components/NavBar'
-import AsideMenu from '@/components/AsideMenu'
-import FooterBar from '@/components/FooterBar'
+const NavBar = () => import(/* webpackChunkName: "navbarmain" */ '@/components/NavBar')
+const AsideMenu = () => import(/* webpackChunkName: "asidemenu" */ '@/components/AsideMenu')
+const FooterBar = () => import(/* webpackChunkName: "footerbar" */ '@/components/FooterBar')
 
 export default {
   name: 'home',
@@ -35,31 +35,13 @@ export default {
         [
           {
             to: '/route-planning',
-            label: 'Planeación ruta',
+            label: 'Planeación',
             icon: 'table'
-          },
-          {
-            to: '/area-planning',
-            label: 'Planeacion sector',
-            icon: 'account-circle'
           },
           {
             to: '/monitor',
             label: 'En progreso',
             icon: 'square-edit-outline'
-          }
-        ],
-        'Capa Normalización',
-        [
-          {
-            to: '/normalized-data',
-            label: 'Estructura de datos',
-            icon: 'credit-card'
-          },
-          {
-            to: '/about-us',
-            label: 'Sobre Nosotros',
-            icon: 'help'
           }
         ]
       ]

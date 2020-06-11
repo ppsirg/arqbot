@@ -5,20 +5,29 @@
       Planeación por definición de ruta
     </hero-bar>
     <section class="section is-main-section">
-      <card-component title="Planeación por definición de ruta" class="bmap">
-        <bing-map :credentials="mapCredentials" :options="mapOptions" v-if="mapVisible">
-        <bing-map-layer name="activeFlightsLayer"
-                        v-on:layer-click="handleEvent"
-                        v-on:layer-mouseover="showTooltip"
-                        v-on:layer-mouseout="hideTooltip"
-                        :visible="pinsVisible">
-            <bing-map-pushpin v-for="item in pins" :metadata="item.metadata"
-            :location="item.location" :options="item.options" :key="item.key"></bing-map-pushpin>
-            <!-- <bing-map-infobox :options="tooltip">
-                <div class="customInfobox">{{tooltip.description}}</div>
-            </bing-map-infobox> -->
-        </bing-map-layer>
-        </bing-map>
+      <card-component title="Planeación de misión" class="bmap">
+        <div >
+            <canvas ref="jRoute" width="640" height="480" style="cursor:crosshair"
+              data-imgsrc="https://images.squarespace-cdn.com/content/v1/557663e3e4b0dbb60c7d8c5e/1537894737858-3VX3YEEXGY1HMZYYELYM/ke17ZwdGBToddI8pDm48kAnkJg-YzxtCygogjUK3bbh7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0nafa6-LSz8qNVVJSth8ciCFH6we3r-KDuPDypPpS-KbkuaghfxlWIaIzffUae6kXw/MapIsolated_2018.png?format=60000w"
+              v-on:mousedown="mouseDownHandler" v-on:contextmenu="contextMenuHandler">
+                Your browser does not support the HTML5 canvas tag.
+            </canvas>
+        </div>
+        <div >
+            <div>
+                <button v-on:click="handlerEventMap">Undo</button>
+                <button v-on:click="handlerEventMap">Clear</button>
+                <p>Press <strong>Left Click</strong> to draw a point.</p>
+                <p><strong>CTRL+Click</strong> or <strong>Right Click</strong> to close the polygon.</p>
+            </div>
+            <div>
+                <p><strong>Coordinates:</strong></p>
+                <ul>
+                  <li v-for="point in perimeter" :key="point.x+point.y"></li>
+                </ul>
+                <!-- <textarea id="coordinates" disabled="disabled" style="width:300px; height:200px;"></textarea> -->
+            </div>
+        </div>
       </card-component>
     </section>
   </div>
@@ -26,48 +35,22 @@
 </template>
 
 <script>
+import checkIntersect from '@/assets/jPolygon'
 import CardComponent from '@/components/CardComponent'
-import TitleBar from '@/components/TitleBar'
-import HeroBar from '@/components/HeroBar'
+// @ is an alias to /src
+const TitleBar = () => import(/* webpackChunkName: "titlebar" */ '@/components/TitleBar')
+const HeroBar = () => import(/* webpackChunkName: "herobar" */ '@/components/HeroBar')
+
 export default {
   name: 'Tables',
   components: { HeroBar, TitleBar, CardComponent },
   data: function () {
     return {
-      mapOptions: {
-        zoom: 13,
-        center: {
-          latitude: 3.37995482366928,
-          longitude: -76.5272338699882
-        }
-      },
-      mapCredentials: 'Aqi5alIcpuMyeuu7-YIeT08W_MUQxVQzmuDPeLXuU0pWYD4HIA-Oyy27EEOGUPBA',
-      mapVisible: true,
-      pinsVisible: true,
-      pins: [
-        {
-          key: 'Home',
-          location: {
-            latitude: 3.37995482366928,
-            longitude: -76.5272338699882
-          },
-          options: {
-            title: 'Home',
-            visible: true
-          }
-        },
-        {
-          key: 'pin2',
-          location: {
-            latitude: 39.950806,
-            longitude: -77.770620
-          },
-          options: {
-            title: 'pin 2',
-            visible: true
-          }
-        }
-      ]
+      isLoading: false,
+      canvas: null,
+      perimeter: [],
+      complete: false,
+      ctx: null
     }
   },
   computed: {
@@ -79,24 +62,124 @@ export default {
     }
   },
   methods: {
-    showTooltip: function (eventst) {
-      console.log({ eventst })
-    },
-    hideTooltip: function (eventht) {
-      console.log({ eventht })
-    },
-    handleEvent: function (evently) {
-      console.log({ evently })
-    },
-    mapclickHandler: function (event) {
+    handlerEventMap: function (event) {
       console.log({ event })
     },
-    moverHandler: function (emover) {
-      console.log({ emover })
+    mouseDownHandler: function (event) {
+      console.log({ event })
+      if (this.complete) {
+        alert('Polygon already created')
+        return false
+      }
+      let rect, x, y
+      if (event.ctrlKey || event.which === 3 || event.button === 2) {
+        if (this.perimeter.length === 2) {
+          alert('You need at least three points for a polygon')
+          return false
+        }
+        x = this.perimeter[0]['x']
+        y = this.perimeter[0]['y']
+        console.log('first')
+        if (checkIntersect(x, y)) {
+          console.log('The line you are drowing intersect another line')
+          return false
+        }
+        console.log('second')
+        this.draw(true)
+        alert('Polygon closed')
+        event.preventDefault()
+        return false
+      } else {
+        let canvas = this.$refs.jRoute
+        console.log('berlin')
+        rect = canvas.getBoundingClientRect()
+        console.log('paris')
+        x = event.clientX - rect.left
+        y = event.clientY - rect.top
+        console.log('london')
+        console.log({ x, y })
+        if (this.perimeter.length > 0 && x === this.perimeter[this.perimeter.length - 1]['x'] && y === this.perimeter[this.perimeter.length - 1]['y']) {
+          // same point - double click
+          return false
+        }
+        console.log('prague')
+        console.log({ checkIntersect })
+        if (checkIntersect.checkIntersect(x, y, this.perimeter)) {
+          alert('The line you are drowing intersect another line')
+          return false
+        }
+        console.log('rome')
+        this.perimeter.push({ x, y })
+        console.log('buda')
+        this.draw(false)
+        console.log('minsk')
+        return false
+      }
     },
-    rightclickHandler: function (rightclick) {
-      console.log({ rightclick })
+    contextMenuHandler (event) {
+      return false
+    },
+    point: function (x, y) {
+      let canvas = this.$refs.jRoute
+      let img = new Image()
+      img.src = canvas.getAttribute('data-imgsrc')
+      let ctx = canvas.getContext('2d')
+      ctx.fillStyle = 'white'
+      ctx.strokeStyle = 'white'
+      ctx.fillRect(x - 2, y - 2, 4, 4)
+      ctx.moveTo(x, y)
+    },
+    start: function (withDraw) {
+      console.log('doing start stuff')
+      let canvas = this.$refs.jRoute
+      let img = new Image()
+      img.src = canvas.getAttribute('data-imgsrc')
+      let ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      if (withDraw === true) {
+        this.draw(false)
+      }
+    },
+    draw: function (end) {
+      let canvas = this.$refs.jRoute
+      let img = new Image()
+      img.src = canvas.getAttribute('data-imgsrc')
+      let ctx = canvas.getContext('2d')
+      ctx.lineWidth = 1
+      ctx.strokeStyle = 'white'
+      ctx.lineCap = 'square'
+      ctx.beginPath()
+      for (var i = 0; i < this.perimeter.length; i++) {
+        if (i === 0) {
+          ctx.moveTo(this.perimeter[i]['x'], this.perimeter[i]['y'])
+          end || this.point(this.perimeter[i]['x'], this.perimeter[i]['y'])
+        } else {
+          ctx.lineTo(this.perimeter[i]['x'], this.perimeter[i]['y'])
+          end || this.point(this.perimeter[i]['x'], this.perimeter[i]['y'])
+        }
+      }
+      if (end) {
+        ctx.lineTo(this.perimeter[0]['x'], this.perimeter[0]['y'])
+        ctx.closePath()
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'
+        ctx.fill()
+        ctx.strokeStyle = 'blue'
+        this.complete = true
+      }
+      ctx.stroke()
     }
+  },
+  mounted: function () {
+    let canvas = this.$refs.jRoute
+    console.log({ canvas })
+    let img = new Image()
+    img.src = canvas.getAttribute('data-imgsrc')
+    let ctx = canvas.getContext('2d')
+    img.addEventListener('load', function () {
+      console.log({ img })
+      console.log(this)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    }, false)
   }
 }
 </script>

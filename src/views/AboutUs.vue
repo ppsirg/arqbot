@@ -20,9 +20,10 @@
 
 <script>
 // @ is an alias to /src
-import TitleBar from '@/components/TitleBar'
-import HeroBar from '@/components/HeroBar'
-import CardComponent from '@/components/CardComponent'
+// @ is an alias to /src
+const TitleBar = () => import(/* webpackChunkName: "titlebar" */ '@/components/TitleBar')
+const HeroBar = () => import(/* webpackChunkName: "herobar" */ '@/components/HeroBar')
+const CardComponent = () => import(/* webpackChunkName: "cardcomponent" */ '@/components/CardComponent')
 export default {
   name: 'aboutus',
   components: {
