@@ -4,8 +4,27 @@
     <hero-bar>
       Planeación por definición de ruta
     </hero-bar>
+    <!-- BARRA INICIAL DE DRON -->
     <section class="section is-main-section">
       <card-component title="Planeación de misión" class="bmap">
+        <section>
+          <b-field grouped>
+            <b-input placeholder="id del dron"
+                type="text"
+                icon="magnify"
+                v-model="missionSettings.dron"
+                >
+            </b-input>
+            <b-select placeholder="Tipo de planeación" v-model="missionSettings.mode">
+              <option v-for="md in planning_modes" :key="md.vl" :value="md.vl">{{md.name}}</option>
+            </b-select>
+          </b-field>
+          <b-field grouped>
+            <b-button @click="clear_canvas" icon-left="eraser">Limpiar</b-button>
+            <b-button @click="undo" icon-left="undo">Deshacer</b-button>
+            <b-button @click="savePoints" icon-left="check">Listo!</b-button>
+          </b-field>
+        </section>
         <div >
             <canvas ref="jRoute" width="640" height="480" style="cursor:crosshair"
               data-imgsrc="https://images.squarespace-cdn.com/content/v1/557663e3e4b0dbb60c7d8c5e/1537894737858-3VX3YEEXGY1HMZYYELYM/ke17ZwdGBToddI8pDm48kAnkJg-YzxtCygogjUK3bbh7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0nafa6-LSz8qNVVJSth8ciCFH6we3r-KDuPDypPpS-KbkuaghfxlWIaIzffUae6kXw/MapIsolated_2018.png?format=60000w"
@@ -15,19 +34,25 @@
         </div>
         <div >
             <div>
-                <button v-on:click="handlerEventMap">Undo</button>
-                <button v-on:click="handlerEventMap">Clear</button>
                 <p>Press <strong>Left Click</strong> to draw a point.</p>
                 <p><strong>CTRL+Click</strong> or <strong>Right Click</strong> to close the polygon.</p>
             </div>
             <div>
                 <p><strong>Coordinates:</strong></p>
                 <ul>
-                  <li v-for="point in perimeter" :key="point.x+point.y"></li>
+                  <li v-for="point in perimeter" :key="point.x+point.y">point: {{ point.x }}, {{point.y}}</li>
                 </ul>
                 <!-- <textarea id="coordinates" disabled="disabled" style="width:300px; height:200px;"></textarea> -->
             </div>
         </div>
+      </card-component>
+      <card-component title="Resumen de misión" >
+        <ul>
+          <li v-for="dr in mission" :key="dr.dron">
+            <strong>{{ dr.dron }}: </strong> {{ dr.points }}
+          </li>
+        </ul>
+        <b-button>Iniciar</b-button>
       </card-component>
     </section>
   </div>
@@ -47,10 +72,11 @@ export default {
   data: function () {
     return {
       isLoading: false,
-      canvas: null,
       perimeter: [],
       complete: false,
-      ctx: null
+      planning_modes: [{ name: 'Ruta', vl: 'rt' }, { name: 'Área', vl: 'ar' }],
+      missionSettings: { mode: 'rt', dron: '', points: [] },
+      mission: []
     }
   },
   computed: {
@@ -62,8 +88,34 @@ export default {
     }
   },
   methods: {
-    handlerEventMap: function (event) {
-      console.log({ event })
+    undo: function (event) {
+      // let ctx = undefined
+      this.perimeter.pop()
+      this.complete = false
+      this.start(true)
+    },
+    clear_canvas: function (event) {
+      // ctx = undefined;
+      this.complete = false
+      this.perimeter = []
+      let canvas = this.$refs.jPolygon
+      let img = new Image()
+      img.src = canvas.getAttribute('data-imgsrc')
+      let ctx = canvas.getContext('2d')
+      img.addEventListener('load', function () {
+        console.log({ img })
+        console.log(this)
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      }, false)
+    },
+    savePoints: function (event) {
+      console.log(event)
+      let newAssigment = this.missionSettings
+      newAssigment.points = this.perimeter
+      this.mission.push(newAssigment)
+      this.perimeter = []
+      this.complete = false
+      this.missionSettings = { mode: 'rt', dron: '', points: [] }
     },
     mouseDownHandler: function (event) {
       console.log({ event })

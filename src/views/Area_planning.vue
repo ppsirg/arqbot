@@ -20,14 +20,13 @@
                 <p>Press <strong>Left Click</strong> to draw a point.</p>
                 <p><strong>CTRL+Click</strong> or <strong>Right Click</strong> to close the polygon.</p>
             </div>
-            <div>
-                <p><strong>Coordinates:</strong></p>
-                <ul>
-                  <li v-for="point in perimeter" :key="point.x+point.y"></li>
-                </ul>
-                <!-- <textarea id="coordinates" disabled="disabled" style="width:300px; height:200px;"></textarea> -->
-            </div>
         </div>
+        <div>
+          <p><strong>Coordinates:</strong></p>
+        </div>
+      </card-component>
+      <card-component>
+        <!-- <div v-for="point in perimeter" :key="point.x">point: {{ point }} </div> -->
       </card-component>
     </section>
   </div>
@@ -61,8 +60,25 @@ export default {
     }
   },
   methods: {
-    handlerEventMap: function (event) {
-      console.log({ event })
+    undo: function (event) {
+      // let ctx = undefined
+      this.perimeter.pop()
+      this.complete = false
+      this.start(true)
+    },
+    clear_canvas: function (event) {
+      // ctx = undefined;
+      this.complete = false
+      this.perimeter = []
+      let canvas = this.$refs.jPolygon
+      let img = new Image()
+      img.src = canvas.getAttribute('data-imgsrc')
+      let ctx = canvas.getContext('2d')
+      img.addEventListener('load', function () {
+        console.log({ img })
+        console.log(this)
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      }, false)
     },
     mouseDownHandler: function (event) {
       console.log({ event })
