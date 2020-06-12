@@ -24,7 +24,7 @@ export default {
   components: { HeroBar, TitleBar, CardComponent },
   data: function () {
     return {
-      videoStreamerURL: `${sts.video_streamer_server}/`
+      videoStreamerURL: `${sts.video_streamer_server}/stream/`
     }
   },
   computed: {
